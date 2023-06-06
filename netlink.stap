@@ -1,0 +1,112 @@
+#! /usr/bin/env stap
+# See net/netlink/af_netlink.c
+
+global nlmsg_types_subsystem
+global nlmsg_types_ctnetlink
+
+# include/linux/netfilter/nfnetlink.h
+# static inline u16 nfnl_msg_type(u8 subsys, u8 msg_type)                         
+# {                                                                               
+#    return subsys << 8 | msg_type;                                              
+function init_nlmsg_types() {
+    # include/uapi/linux/netfilter/nfnetlink.h
+    nlmsg_types_subsystem[0]="NFNL_SUBSYS_NONE"
+    nlmsg_types_subsystem[1]="NFNL_SUBSYS_CTNETLINK"
+    nlmsg_types_subsystem[2]="NFNL_SUBSYS_CTNETLINK_EXP"
+    nlmsg_types_subsystem[3]="NFNL_SUBSYS_QUEUE"              
+    nlmsg_types_subsystem[4]="NFNL_SUBSYS_ULOG"               
+    nlmsg_types_subsystem[5]="NFNL_SUBSYS_OSF"                
+    nlmsg_types_subsystem[6]="NFNL_SUBSYS_IPSET"              
+    nlmsg_types_subsystem[7]="NFNL_SUBSYS_ACCT"               
+    nlmsg_types_subsystem[8]="NFNL_SUBSYS_CTNETLINK_TIMEOUT"  
+    nlmsg_types_subsystem[9]="NFNL_SUBSYS_CTHELPER"           
+    nlmsg_types_subsystem[10]="NFNL_SUBSYS_NFTABLES"          
+    nlmsg_types_subsystem[11]="NFNL_SUBSYS_NFT_COMPAT"        
+    nlmsg_types_subsystem[12]="NFNL_SUBSYS_COUNT"             
+
+    # linux/netfilter/nfnetlink_conntrack.h
+    nlmsg_types_ctnetlink[0]="IPCTNL_MSG_CT_NEW"
+    nlmsg_types_ctnetlink[1]="IPCTNL_MSG_CT_GET"
+    nlmsg_types_ctnetlink[2]="IPCTNL_MSG_CT_DELETE"
+    nlmsg_types_ctnetlink[3]="IPCTNL_MSG_CT_GET_CTRZERO"
+    nlmsg_types_ctnetlink[4]="IPCTNL_MSG_CT_GET_STATS_CPU"
+    nlmsg_types_ctnetlink[5]="IPCTNL_MSG_CT_GET_STATS"
+    nlmsg_types_ctnetlink[6]="IPCTNL_MSG_CT_GET_DYING"
+    nlmsg_types_ctnetlink[7]="IPCTNL_MSG_CT_GET_UNCONFIRMED"
+    nlmsg_types_ctnetlink[8]="IPCTNL_MSG_MAX"
+}
+
+function print_generic_info() {
+    printf("  pp: %s\n", pp())
+    printf("  execname: %s\n", execname())
+    printf("  tid: %d\n", tid())
+    printf("  uid: %d\n", uid())
+    printf("  gid: %d\n", gid())
+    printf("  cpu: %d\n", cpu())
+    printf("  ctime: %s\n", ctime())
+    printf("  gettimeofday_us: %d\n", gettimeofday_us())
+    printf("  ---\n")
+}
+
+function print_netlink_msg () {
+    printf("  nl_family: %d\n", @cast($msg, "sockaddr_nl")->nl_family)
+    printf("  nl_pad: %d\n", @cast($msg, "sockaddr_nl")->nl_pad)
+    printf("  nl_pid: %d\n", @cast($msg, "sockaddr_nl")->nl_pid)
+    printf("  nl_groups: %d\n", @cast($msg, "sockaddr_nl")->nl_groups)
+    printf("  msg_flags: %d\n", $msg->msg_flags)
+    printf("  msg_namelen: %d\n", $msg->msg_namelen)
+    printf("  msg_controllen: %d\n", $msg->msg_controllen)
+}
+
+function print_message_type(nlmsg_type) {
+    msg_type_subsystem=""
+    printf("  nlmsg_type: %d\n", nlmsg_type)
+    for (i = 12; i >= 0; i--) {
+      if ( (nlmsg_type & 0xff00) == (i << 8)) {
+         msg_type_subsystem=nlmsg_types_subsystem[i]
+         printf("  nlmsg_types_subsystem: %s\n", msg_type_subsystem)
+      }
+    }
+    if (msg_type_subsystem == "NFNL_SUBSYS_CTNETLINK") {
+      for (i = 8; i >= 0; i--) {
+        if ( (nlmsg_type & 0x00ff) == i) {
+           printf("  nlmsg_types_ctnetlink: %s\n", nlmsg_types_ctnetlink[i])
+        }
+      }
+    }
+}
+
+function print_nlmsghdr() {
+    printf("  nlmsg_len: %d\n", @cast($skb->data, "nlmsghdr")->nlmsg_len)
+    print_message_type(@cast($skb->data, "nlmsghdr")->nlmsg_type)
+    printf("  nlmsg_flags: %d\n", @cast($skb->data, "nlmsghdr")->nlmsg_flags)
+    printf("  nlmsg_seq: %d\n", @cast($skb->data, "nlmsghdr")->nlmsg_seq)
+    printf("  nlmsg_pid: %d\n", @cast($skb->data, "nlmsghdr")->nlmsg_pid)
+}
+
+probe begin {
+    init_nlmsg_types()
+    print("Initialized ...\n")
+}
+
+probe kernel.function("netlink_recvmsg") {
+    print("netlink_recvmsg()\n")
+    print_generic_info()
+    print_netlink_msg()
+    printf("-------------------------------------------\n")
+}
+
+probe kernel.function("netlink_sendmsg") {
+    print("netlink_sendmsg()\n")
+    print_generic_info()
+    print_netlink_msg()
+    printf("-------------------------------------------\n")
+}
+
+probe kernel.function("netlink_rcv_skb") {
+    print("netlink_rcv_skb()\n")
+    print_generic_info()
+    print_nlmsghdr()
+    print("-------------------------------------------\n")
+}
+

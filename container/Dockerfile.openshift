@@ -1,0 +1,2 @@
+FROM registry.redhat.io/rhel8/support-tools
+RUN  yum install --enablerepo=rhel-8-for-x86_64-baseos-rpms --enablerepo=rhel-8-for-x86_64-appstream-rpms --enablerepo=rhel-8-for-x86_64-baseos-debug-rpms systemtap gcc kernel-devel-4.18.0-240.22.1.el8_3.x86_64 kernel-core-4.18.0-240.22.1.el8_3.x86_64 kernel-headers-4.18.0-240.22.1.el8_3.x86_64 kernel-debuginfo-4.18.0-240.22.1.el8_3.x86_64 -y && yum clean all

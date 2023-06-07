@@ -14,12 +14,13 @@ if [ "${CONTAINER_IMAGE}" == "" ]; then
     echo "Please provide a valid container image name (without a tag)"
     exit 1
 fi
+RELEASE_VER=$(echo "${KERNEL_VERSION}" | awk -F '.' '{print $(NF-1)}' | sed 's/el//' | sed 's/_/./')
 
 cat <<EOF > "${DIR}/_output/Dockerfile.${KERNEL_VERSION}"
 FROM registry.redhat.io/rhel8/support-tools
-RUN  yum install --enablerepo=rhel-8-for-x86_64-baseos-rpms --enablerepo=rhel-8-for-x86_64-appstream-rpms \
-     --enablerepo=rhel-8-for-x86_64-baseos-debug-rpms --enablerepo=rhel-8-for-x86_64-baseos-eus-rpms  \
-     --enablerepo=rhel-8-for-x86_64-baseos-eus-debug-rpms \
+RUN  yum install --releasever=${RELEASE_VER} --enablerepo=rhel-8-for-x86_64-baseos-rpms \
+     --enablerepo=rhel-8-for-x86_64-appstream-rpms --enablerepo=rhel-8-for-x86_64-baseos-debug-rpms \
+     --enablerepo=rhel-8-for-x86_64-baseos-eus-rpms --enablerepo=rhel-8-for-x86_64-baseos-eus-debug-rpms \
      systemtap gcc kernel-devel-${KERNEL_VERSION} kernel-core-${KERNEL_VERSION} kernel-headers-${KERNEL_VERSION} \
      kernel-debuginfo-${KERNEL_VERSION} -y && yum clean all
 EOF

@@ -28,6 +28,10 @@ RUN  yum install --releasever=${RELEASE_VER} --enablerepo=rhel-8-for-x86_64-base
      systemtap gcc kernel-devel-${KERNEL_VERSION} kernel-core-${KERNEL_VERSION} kernel-headers-${KERNEL_VERSION} \
      kernel-debuginfo-${KERNEL_VERSION} less -y && yum clean all
 EOF
+
+rm -Rf "${DIR}_output/stap-scripts"
+cp -a stap-scripts _output/stap-scripts
+
 pushd "${DIR}/_output"
 podman build -t "${CONTAINER_IMAGE}:${KERNEL_VERSION}" -f "Dockerfile.${KERNEL_VERSION}"
 podman push "${CONTAINER_IMAGE}:${KERNEL_VERSION}"

@@ -31,10 +31,11 @@ RUN yum install less conntrack-tools tcpdump -y
 RUN yum clean all
 EOF
 
-rm -Rf "${DIR}_output/stap-scripts"
+rm -Rf "${DIR}/_output/stap-scripts"
 cp -a stap-scripts _output/stap-scripts
 
 pushd "${DIR}/_output"
 podman build -t "${CONTAINER_IMAGE}:${KERNEL_VERSION}" -f "Dockerfile.${KERNEL_VERSION}"
 podman push "${CONTAINER_IMAGE}:${KERNEL_VERSION}"
 popd
+rm -Rf "${DIR}/_output""

@@ -26,7 +26,9 @@ RUN  yum install --releasever=${RELEASE_VER} --enablerepo=rhel-8-for-x86_64-base
      --enablerepo=rhocp-4.13-for-rhel-8-x86_64-rpms --enablerepo=rhocp-4.12-for-rhel-8-x86_64-debug-rpms \
      --enablerepo=rhocp-4.10-for-rhel-8-x86_64-debug-rpms --enablerepo=rhocp-4.13-for-rhel-8-x86_64-debug-rpms \
      systemtap gcc kernel-devel-${KERNEL_VERSION} kernel-core-${KERNEL_VERSION} kernel-headers-${KERNEL_VERSION} \
-     kernel-debuginfo-${KERNEL_VERSION} less -y && yum clean all
+     kernel-debuginfo-${KERNEL_VERSION} -y && yum clean all
+RUN yum install less conntrack-tools tcpdump -y
+RUN yum clean all
 EOF
 
 rm -Rf "${DIR}_output/stap-scripts"

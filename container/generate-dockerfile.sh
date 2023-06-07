@@ -23,7 +23,7 @@ RUN  yum install --enablerepo=rhel-8-for-x86_64-baseos-rpms --enablerepo=rhel-8-
      systemtap gcc kernel-devel-${KERNEL_VERSION} kernel-core-${KERNEL_VERSION} kernel-headers-${KERNEL_VERSION} \
      kernel-debuginfo-${KERNEL_VERSION} -y && yum clean all
 EOF
-pushd "${DIR}"
+pushd "${DIR}/_output"
 podman build -t "${CONTAINER_IMAGE}:${KERNEL_VERSION}" -f "Dockerfile.${KERNEL_VERSION}"
 podman push "${CONTAINER_IMAGE}:${KERNEL_VERSION}"
 popd

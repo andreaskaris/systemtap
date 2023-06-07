@@ -21,6 +21,8 @@ FROM registry.redhat.io/rhel8/support-tools
 RUN  yum install --releasever=${RELEASE_VER} --enablerepo=rhel-8-for-x86_64-baseos-rpms \
      --enablerepo=rhel-8-for-x86_64-appstream-rpms --enablerepo=rhel-8-for-x86_64-baseos-debug-rpms \
      --enablerepo=rhel-8-for-x86_64-baseos-eus-rpms --enablerepo=rhel-8-for-x86_64-baseos-eus-debug-rpms \
+     --enablerepo=rhocp-4.12-for-rhel-8-x86_64-rpms --enablerepo=rhocp-4.10-for-rhel-8-x86_64-rpms \
+     --enablerepo=rhocp-4.13-for-rhel-8-x86_64-rpms \
      systemtap gcc kernel-devel-${KERNEL_VERSION} kernel-core-${KERNEL_VERSION} kernel-headers-${KERNEL_VERSION} \
      kernel-debuginfo-${KERNEL_VERSION} -y && yum clean all
 EOF
